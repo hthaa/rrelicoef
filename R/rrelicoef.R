@@ -6,6 +6,9 @@
 #' assumption of tau-equivalent measures. It computes reliability coefficients
 #' for factors with and without correlated errors.
 #'
+#' @param mod Lavaan CFA model object.
+#' @param reverse Logical. Whether to turn negative factor loadings positive (i.e., calculate RRC as if items with negative factor loadings were reverse-scored.)
+#'
 #' @examples
 #' model.01 <- '
 #'            Col =~ respected + secure
@@ -15,10 +18,13 @@
 #' rrelicoef(est.model.01)
 #'
 #' @export
-rrelicoef <- function(mod){
+rrelicoef <- function(mod, reverse = FALSE){
   latvarname <- lavNames(mod, type="lv")
   obsvarname <- lavNames(mod, type="ov")
   parest <- parameterestimates(mod)
+  if (reverse) {
+    parest[, "est"] <- abs(parest[, "est"])
+  }
   idest <- parest$lhs %in% latvarname & !parest$rhs %in% latvarname
   sumlambdasq <- with(parest[idest,],
                       tapply(est, lhs, sum)^2)
